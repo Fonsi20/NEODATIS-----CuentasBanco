@@ -149,6 +149,7 @@ public class Altas {
 
         do {
             do {
+                Visualizar.VerCuentasBancarias();
                 System.out.print("Numero Cuenta Corriente:\n> ");
                 numeroCta = read.readLine();
                 opc3 = Comprobaciones.comprobarNC(numeroCta);
