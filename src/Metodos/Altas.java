@@ -16,6 +16,8 @@ import org.neodatis.odb.ODB;
 import org.neodatis.odb.ODBFactory;
 import org.neodatis.odb.Objects;
 import org.neodatis.odb.core.query.IQuery;
+import org.neodatis.odb.core.query.criteria.And;
+import org.neodatis.odb.core.query.criteria.ICriterion;
 import org.neodatis.odb.core.query.criteria.Where;
 import org.neodatis.odb.impl.core.query.criteria.CriteriaQuery;
 
@@ -30,7 +32,7 @@ public class Altas {
 
         CuentaCorriente CC = null;
         Double SaldoActual;
-        String Numero, Sucursal;
+        String Numero, Sucursal, eleccion;
         int opc = 0, opc2 = 0, opc3 = 0;
 
         IQuery query;
@@ -54,15 +56,32 @@ public class Altas {
 
             if (objects.isEmpty()) {
 
-                opc2 = 0;
-                CC = new CuentaCorriente(Numero, Sucursal, SaldoActual);
+                System.out.print("Desea añadir un nuevo cliente a esta cuenta?\n> ");
+                opc = Comprobaciones.PreguntaSiNO();
 
-                System.err.println("----------------------------------------------"
-                        + "\nAñade un Cliente a esta cuenta con numero: " + Numero + ": \n");
-                do {
-                    AñadirCliente(CC);
-                    opc = Comprobaciones.PreguntaSiNO();
-                } while (opc != 1);
+                if (opc == 1) {
+
+                    Visualizar.VerClientes();
+                    System.out.print("Escoja un cliente de la lista, escriba su dni:\n> ");
+                    eleccion = read.readLine();
+
+                    ICriterion crit = new And().add(Where.equal("dni", eleccion));
+                    query = new CriteriaQuery(Cliente.class, crit);
+
+                    //AQUÍ LO DEJÉ
+                    Cliente cliente = (Cliente) odb.getObjects(query).getFirst();
+                }
+                if (opc == 0) {
+                    opc2 = 0;
+                    CC = new CuentaCorriente(Numero, Sucursal, SaldoActual);
+                    System.err.println("----------------------------------------------"
+                            + "\nAñade un Cliente a esta cuenta con numero: " + Numero + ": \n");
+                    do {
+                        AñadirCliente(CC);
+                        System.out.println("Desea añadir otro cliente a esta cuenta?");
+                        opc = Comprobaciones.PreguntaSiNO();
+                    } while (opc != 1);
+                }
 
             } else {
                 opc2 = 1;
@@ -119,6 +138,7 @@ public class Altas {
                         + "\nAñade un Cliente a esta cuenta con numero: " + Numero + ": \n");
                 do {
                     AñadirCliente(CP);
+                    System.out.println("Desea añadir otro cliente a esta cuenta?");
                     opc = Comprobaciones.PreguntaSiNO();
                 } while (opc != 1);
 
@@ -138,7 +158,7 @@ public class Altas {
         String numeroCta;
         int opc = 0, opc2 = 0, opc3 = 0;
         LocalDate fechaOperacion;
-        LocalTime  hora;
+        LocalTime hora;
         float cantidad;
         Double SaldoAnterior;
 
@@ -186,6 +206,7 @@ public class Altas {
         CC.setSaldoActual(CC.getSaldoActual() + cantidad);
         odb.store(CC);
         odb.store(M);
+        odb.commit();
         odb.close();
 
     }

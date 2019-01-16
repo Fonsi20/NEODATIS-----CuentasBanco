@@ -57,7 +57,7 @@ public class Comprobaciones {
 
     static int PreguntaSiNO() throws IOException {
         int resul = 0;
-        System.out.println("Desea continuar?  (0 - SI / 1 - NO):\n");
+        System.out.print("Elige una opción:  (0 - SI / 1 - NO):\n> ");
         resul = Integer.parseInt(read.readLine());
         if (resul > 1 && resul < 0) {
             System.err.println("'Error' No se introdujo un valor válido.");
@@ -117,5 +117,4 @@ public class Comprobaciones {
 
         return miLetra;
     }
-
 }

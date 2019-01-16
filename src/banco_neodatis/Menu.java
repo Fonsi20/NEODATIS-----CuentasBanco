@@ -1,6 +1,9 @@
 package banco_neodatis;
 
 import Metodos.Altas;
+import Metodos.Bajas;
+import Metodos.Modificaciones;
+import Metodos.Visualizar;
 import static banco_neodatis.EntradaTeclado.read;
 import java.io.IOException;
 import java.text.ParseException;
@@ -45,25 +48,25 @@ class Menu {
                     MenuAltas();
                     break;
                 case 2:
-
+                    Modificaciones.cambiarIntereses();
                     break;
                 case 3:
-
+                    Bajas.cerrarCuentaPlazo();
                     break;
                 case 4:
-
+                    Visualizar.clientesC();
                     break;
                 case 5:
-
+                    Visualizar.clientesRicos();
                     break;
                 case 6:
-
+                    Visualizar.clientesPobres();
                     break;
                 case 7:
-
+                    Visualizar.saldoMedioClientes();
                     break;
                 case 8:
-
+                    Visualizar.movimientosDeUnaCuenta();
                     break;
                 case 9:
                     System.err.println("Adios!");
