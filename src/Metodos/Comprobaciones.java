@@ -3,6 +3,9 @@ package Metodos;
 import static banco_neodatis.EntradaTeclado.read;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 
 /**
  *
@@ -117,4 +120,5 @@ public class Comprobaciones {
 
         return miLetra;
     }
+
 }

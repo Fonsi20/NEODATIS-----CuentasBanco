@@ -4,7 +4,14 @@ import Clases.Cliente;
 import Clases.Cuenta;
 import Clases.CuentaCorriente;
 import Clases.CuentaPlazo;
+import Clases.Movimiento;
+import static banco_neodatis.EntradaTeclado.read;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import org.neodatis.odb.ODB;
 import org.neodatis.odb.ODBFactory;
 import org.neodatis.odb.ObjectValues;
@@ -34,9 +41,10 @@ public class Visualizar {
         while (val.hasNext()) {
             ObjectValues ov = (ObjectValues) val.next();
 
-            System.out.println("Numero: " + ov.getByAlias("Numero")
-                    + "\n Sucursal: " + ov.getByAlias("Sucursal")
-                    + "\n SaldoActual: " + ov.getByAlias("SaldoActual"));
+            System.out.println("\n\n------------------------------\n"
+                    + "\nNumero: " + ov.getByAlias("Numero")
+                    + "\n\tSucursal: \t" + ov.getByAlias("Sucursal")
+                    + "\n\tSaldoActual: \t" + ov.getByAlias("SaldoActual"));
         }
         odb.close();
 
@@ -55,10 +63,11 @@ public class Visualizar {
         while (val.hasNext()) {
             ObjectValues ov = (ObjectValues) val.next();
 
-            System.out.println("Numero: " + ov.getByAlias("Numero")
-                    + "\n Sucursal: " + ov.getByAlias("Sucursal")
-                    + "\n SaldoActual: " + ov.getByAlias("SaldoActual")
-                    + "\n Intereses: " + ov.getByAlias("intereses"));
+            System.out.println("\n\n------------------------------\n"
+                    + "\nNumero: " + ov.getByAlias("Numero")
+                    + "\n\tSucursal: " + ov.getByAlias("Sucursal")
+                    + "\n\tSaldoActual: " + ov.getByAlias("SaldoActual")
+                    + "\n\tIntereses: " + ov.getByAlias("intereses"));
         }
         odb.close();
 
@@ -76,9 +85,10 @@ public class Visualizar {
         while (val.hasNext()) {
             ObjectValues ov = (ObjectValues) val.next();
 
-            System.out.println("Numero: " + ov.getByAlias("dni")
-                    + "\n DNI: " + ov.getByAlias("nombre")
-                    + "\n Nombre: " + ov.getByAlias("direccion"));
+            System.out.println("\n\n------------------------------\n"
+                    + "\nNumero: " + ov.getByAlias("dni")
+                    + "\n\tDNI: " + ov.getByAlias("nombre")
+                    + "\n\tNombre: " + ov.getByAlias("direccion"));
         }
         odb.close();
 
@@ -204,10 +214,51 @@ public class Visualizar {
         odb.close();
     }
 
-    public static void movimientosDeUnaCuenta() {
-       
-        System.out.println("QUEDA POR HACER JAJA");
-        
+    public static void movimientosDeUnaCuenta() throws IOException, ParseException {
+
+        ODB odb = ODBFactory.openClient("localhost", 8000, "Cuentas");
+
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        VerCuentasBancarias();
+        System.out.print("\n\nNumero de cuenta Bancara sobre la que realizar la consulta:"
+                + "\n> ");
+        String nCuenta = read.readLine();
+
+        IQuery query = new CriteriaQuery(CuentaCorriente.class, Where.equal("Numero", nCuenta));
+        Objects<CuentaCorriente> objects = odb.getObjects(query);
+
+        if (!objects.isEmpty()) {
+            CuentaCorriente aux = objects.getFirst();
+            System.err.println(aux);
+            System.err.println(aux.getMovimientos());
+            if (!aux.getMovimientos().isEmpty()) {
+
+                System.out.println("Fecha de inicio: (dd/MM/yyyy)");
+                String fechaI = read.readLine();
+                LocalDate dateI = LocalDate.parse(fechaI, dateFormat);
+
+                System.out.println("Fecha de fin: (dd/MM/yyyy)");
+                String fechaF = read.readLine();
+                LocalDate dateF = LocalDate.parse(fechaF, dateFormat);
+
+                System.out.println("\n"
+                        + "                                       Movimientos                                          \n"
+                        + "--------------------------------------------------------------------------------------------");
+                for (Movimiento m : aux.getMovimientos()) {
+                    if (m.getFechaOperacion().isAfter(dateI) && m.getFechaOperacion().isBefore(dateF)) {
+                        System.out.println("Numero de Cuenta:" + m.getNumeroCta() + "\t > Cantidad: " + m.getCantidad() + " // Fecha Operacion: " + m.getFechaOperacion() + " // Hora: " + m.getHora());
+                    }
+                }
+                System.out.println("--------------------------------------------------------------------------------------------\n");
+            } else {
+                System.err.println("La Cuenta Corriente seleccionada no tiene movimientos.");
+            }
+        } else {
+            System.err.println("\nERROR: Numero de cuenta corriente no encontrado.\n");
+        }
+        odb.close();
+
     }
 
 }

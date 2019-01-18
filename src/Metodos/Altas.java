@@ -6,7 +6,6 @@ import Clases.CuentaPlazo;
 import Clases.Movimiento;
 import static banco_neodatis.EntradaTeclado.read;
 import java.io.IOException;
-import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -31,6 +30,7 @@ public class Altas {
         ODB odb = ODBFactory.openClient("localhost", 8000, "Cuentas");
 
         CuentaCorriente CC = null;
+        Cliente cliente = null;
         Double SaldoActual;
         String Numero, Sucursal, eleccion;
         int opc = 0, opc2 = 0, opc3 = 0;
@@ -56,6 +56,8 @@ public class Altas {
 
             if (objects.isEmpty()) {
 
+                CC = new CuentaCorriente(Numero, Sucursal, SaldoActual);
+
                 System.out.print("Desea añadir un nuevo cliente a esta cuenta?\n> ");
                 opc = Comprobaciones.PreguntaSiNO();
 
@@ -68,19 +70,22 @@ public class Altas {
                     ICriterion crit = new And().add(Where.equal("dni", eleccion));
                     query = new CriteriaQuery(Cliente.class, crit);
 
-                    //AQUÍ LO DEJÉ
-                    Cliente cliente = (Cliente) odb.getObjects(query).getFirst();
+                    cliente = (Cliente) odb.getObjects(query).getFirst();
+                    cliente.getCuenta().add(CC);
+                    odb.store(CC);
                 }
                 if (opc == 0) {
-                    opc2 = 0;
-                    CC = new CuentaCorriente(Numero, Sucursal, SaldoActual);
+
                     System.err.println("----------------------------------------------"
                             + "\nAñade un Cliente a esta cuenta con numero: " + Numero + ": \n");
+
                     do {
                         AñadirCliente(CC);
                         System.out.println("Desea añadir otro cliente a esta cuenta?");
                         opc = Comprobaciones.PreguntaSiNO();
                     } while (opc != 1);
+
+                    odb.store(CC);
                 }
 
             } else {
@@ -88,7 +93,7 @@ public class Altas {
                 System.err.println("Ya existe esa CUENTA en la BBDD.");
             }
         } while (opc2 != 0);
-        odb.store(CC);
+
         odb.close();
 
     }
@@ -156,14 +161,10 @@ public class Altas {
 
         Movimiento M = null;
         String numeroCta;
-        int opc = 0, opc2 = 0, opc3 = 0;
+        int opc2 = 0, opc3 = 0;
         LocalDate fechaOperacion;
         LocalTime hora;
         float cantidad;
-        Double SaldoAnterior;
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        SimpleDateFormat sdf2 = new SimpleDateFormat("HH:mm:ss");
 
         IQuery query;
 
@@ -180,14 +181,16 @@ public class Altas {
 
             System.out.print("Fecha en la cual se realizó la operación:(dd/mm/aaaa)\n> ");
             fechaOperacion = LocalDate.now();
+            System.out.print(fechaOperacion);
 
-            System.out.print("Hora en la cual se realizó la operación:(hh:mm:ss)\n> ");
+            System.out.print("\nHora en la cual se realizó la operación:(hh:mm:ss)\n> ");
             hora = LocalTime.now();
+            System.out.print(hora);
 
             query = new CriteriaQuery(CuentaCorriente.class, Where.equal("Numero", numeroCta));
             Objects<CuentaCorriente> objects = odb.getObjects(query);
 
-            System.out.print("El saldo actual antes de realizar el movimiento es de:\n> " + objects.getFirst().getSaldoActual()
+            System.out.print("\nEl saldo actual antes de realizar el movimiento es de:\n> " + objects.getFirst().getSaldoActual()
                     + "\nDespues de realizar el movimiento será de:\n> " + (objects.getFirst().getSaldoActual() + cantidad));
 
             if (objects.isEmpty()) {
@@ -204,8 +207,8 @@ public class Altas {
 
         CuentaCorriente CC = (CuentaCorriente) odb.getObjects(query).getFirst();
         CC.setSaldoActual(CC.getSaldoActual() + cantidad);
+        CC.getMovimientos().add(M);
         odb.store(CC);
-        odb.store(M);
         odb.commit();
         odb.close();
 
